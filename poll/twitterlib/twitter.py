@@ -27,7 +27,7 @@ class Twitter:
                 "verified",
                 "withheld"
             ],
-            "max_results": 100
+            "max_results": 1000
         }
         cursor = None
         while True:
