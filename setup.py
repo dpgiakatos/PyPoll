@@ -18,7 +18,7 @@ with open(path.join(HERE, 'requirements.txt'), encoding='utf-8') as f:
 
 # This call to setup() does all the work
 setup(
-    name="my-lib",
+    name="poll",
     version="0.0.1",
     description="Polarization library",
     long_description=long_description,
@@ -34,7 +34,7 @@ setup(
         "Programming Language :: Python :: 3.10",
         "Operating System :: OS Independent"
     ],
-    packages=["poll"],
+    packages=find_packages(),
     include_package_data=True,
     install_requires=required
 )
