@@ -13,11 +13,13 @@ class Twitter:
         self.client = tweepy.Client(bearer_token=bearer_token, wait_on_rate_limit=True)
         self.mongodb: MongoDB = mongodb
 
-    def get_followers(self, handle):
-        if handle is None or handle == "":
+    def get_followers(self, username):
+        if username is None or username == "":
             raise Exception("Handle cannot be none or empty")
-        print(f"Fetching {handle} ...")
-        user = dict(self.client.get_user(username=handle, user_fields=["id", "name"]).data)
+        print(f"Fetching {username} ...")
+        self.mongodb.create_index(username)
+        print(f"`{username}` collection created.")
+        user = dict(self.client.get_user(username=username, user_fields=["id", "name"]).data)
         print(f"{user}\nGetting followers of {user['name']} ...")
         params = {
             "id": user["id"],
@@ -29,7 +31,13 @@ class Twitter:
             ],
             "max_results": 1000
         }
-        cursor = None
+        cursor = self.mongodb.get_cursor(username)
+        if cursor is not None:
+            cursor = cursor["next_cursor"]
+            if cursor is None:
+                print(f"The followers of {user['name']} have been collected.")
+                print(f"Please delete the collections and start over if you want to update them.")
+                return
         while True:
             try:
                 if cursor is None:
@@ -43,12 +51,13 @@ class Twitter:
                 print(f"Server error. {e} Sleeping for 10sec ...")
                 sleep(10)
                 continue
-            self.mongodb.insert_many(handle, [dict(item) for item in res.data])
+            self.mongodb.insert_many(username, [dict(item) for item in res.data])
             meta = dict(res.meta)
             if "next_token" in meta:
-                self.mongodb.update_metadata(handle, str(cursor), str(meta["next_token"]))
+                self.mongodb.update_metadata(username, str(cursor), str(meta["next_token"]))
                 cursor = meta["next_token"]
             else:
+                self.mongodb.update_metadata(username, str(cursor), None)
                 break
 
     def get_tweets_by_hashtag(self, hashtag, start_time=None, end_time=None):

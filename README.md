@@ -1,5 +1,5 @@
-# my-lib
-A python library for political polarization. [Political lighthouse](https://political-lighthouse.netlify.com/) created by using this library.
+# poll
+A python library for polarization. [Political lighthouse](https://political-lighthouse.netlify.com/) created by using this library.
 
 ### Installation
 ```commandline
