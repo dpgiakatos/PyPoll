@@ -56,10 +56,11 @@ class MongoDB:
         return False
 
     def dump(self, collection):
-        print(f"Exporting collection `{collection}` with {self.count_documents(collection)} ...")
+        count = self.count_documents(collection)
+        print(f"Exporting collection `{collection}` with {count} ...")
         file = open(f"{collection}.bson", "wb+")
         cursor = self.get_all(collection)
-        for doc in tqdm(cursor):
+        for doc in tqdm(cursor, total=count):
             file.write(bson.BSON.encode(doc))
 
     def restore(self, collection):

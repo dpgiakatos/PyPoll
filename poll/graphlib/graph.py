@@ -8,6 +8,7 @@ import xml.etree.ElementTree as ET
 from itertools import compress, combinations
 from collections import Counter
 import json
+import walker
 
 
 class Graph:
@@ -41,7 +42,7 @@ class Graph:
         else:
             percentage_of_subgraph = count_documents
         cursor = self.mongodb.get_all(hashtag)
-        for index, document in tqdm(enumerate(cursor)):
+        for index, document in tqdm(enumerate(cursor), total=count_documents):
             if index >= percentage_of_subgraph:
                 break
             if "entities" not in document or "mentions" not in document["entities"]:
@@ -120,7 +121,7 @@ class Graph:
             "polarization_index": dict()
         }
         pairs = list(combinations([item["username"] for item in self.metadata["entities"]], 2))
-        for pair in pairs:
+        for pair in tqdm(pairs, total=len(pairs)):
             self.metadata["graph_properties"]["polarization_index"]["|".join(pair)] = self.get_polarization_index(
                 pair[0], pair[1])
         self.metadata["title"] = title
@@ -188,3 +189,46 @@ class Graph:
         ET.register_namespace("", namespace)
         tree.write(save_to_file)
         self.__metadata_save_as(save_to_file)
+
+    def rwc(self, user_A, user_B, k=None):
+        graph_integer_labels = nx.convert_node_labels_to_integers(self.graph, label_attribute="label")
+        walks = walker.random_walks(graph_integer_labels, walk_len=30, n_walks=1000)
+        central_nodes = sorted(self.graph.degree, key=lambda x: x[1], reverse=True)
+        central_l_nodes = []
+        central_r_nodes = []
+        for node in central_nodes:
+            follows = self.graph.nodes(data="follows")[node[0]]
+            if follows == user_A:
+                central_l_nodes.append(node[0])
+            elif follows == user_B:
+                central_r_nodes.append(node[0])
+        if k is not None:
+            central_l_nodes = central_l_nodes[:k]
+            central_r_nodes = central_r_nodes[:k]
+        c_ll = 0
+        c_rr = 0
+        c_lr = 0
+        c_rl = 0
+        c_ln = 0
+        c_rn = 0
+        for walk in walks:
+            start = graph_integer_labels.nodes[walk[0]]
+            end = graph_integer_labels.nodes[walk[-1]]
+            if start["follows"] == user_A and start["label"] in central_l_nodes:
+                c_ll += 1
+            elif start["follows"] == user_B and end["label"] in central_r_nodes:
+                c_rr += 1
+            elif start["follows"] == user_A and end["label"] in central_r_nodes:
+                c_lr += 1
+            elif start["follows"] == user_B and end["label"] in central_l_nodes:
+                c_rl += 1
+            elif start["follows"] == user_A and end["follows"] not in [user_A, user_B]:
+                c_ln += 1
+            elif start["follows"] == user_B and end["follows"] not in [user_A, user_B]:
+                c_rn += 1
+        p_ll = c_ll / (c_ll + c_lr + c_ln)
+        p_rr = c_rr / (c_rr + c_rl + c_rn)
+        p_lr = c_lr / (c_lr + c_ll + c_ln)
+        p_rl = c_rl / (c_rl + c_rr + c_rn)
+        rwc = p_ll * p_rr + p_lr * p_rl
+        return (rwc + 1) / 2
