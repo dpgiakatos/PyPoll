@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'poll'
+project = 'pypoll'
 copyright = '2022, Dimitrios P. Giakatos'
 author = 'Dimitrios P. Giakatos'
 release = '0.0.1'

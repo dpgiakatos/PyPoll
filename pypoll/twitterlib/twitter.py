@@ -1,6 +1,6 @@
 import tweepy
 from time import sleep
-from poll.dblib import MongoDB
+from pypoll.dblib import MongoDB
 from datetime import timedelta
 
 

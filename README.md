@@ -3,14 +3,14 @@ A python library for polarization. [Political lighthouse](https://political-ligh
 
 ### Installation
 ```commandline
-pip install poll
+pip install git+https://github.com/dpgiakatos/PyPoll.git
 ```
 
 ### Get started
 Import the libraries.
 
 ```python
-from poll import Twitter, MongoDB, Graph, GraphPlot
+from pypoll import Twitter, MongoDB, Graph, GraphPlot
 from dotenv import load_dotenv
 import os
 ```

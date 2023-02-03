@@ -18,7 +18,7 @@ with open(path.join(HERE, 'requirements.txt'), encoding='utf-8') as f:
 
 # This call to setup() does all the work
 setup(
-    name="poll",
+    name="pypoll",
     version="0.0.1",
     description="Polarization library",
     long_description=long_description,

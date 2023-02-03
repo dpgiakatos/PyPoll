@@ -1,4 +1,4 @@
-from poll.dblib import MongoDB
+from pypoll.dblib import MongoDB
 import networkx as nx
 from tqdm import tqdm
 from scipy.sparse import identity
