@@ -55,6 +55,10 @@ class MongoDB:
             return True
         return False
 
+    def get_tweet(self, collection, tweet_id):
+        tweet = self.client[self.db][collection].find_one({"id": tweet_id})
+        return tweet
+
     def dump(self, collection):
         count = self.count_documents(collection)
         print(f"Exporting collection `{collection}` with {count} ...")
@@ -63,11 +67,24 @@ class MongoDB:
         for doc in tqdm(cursor, total=count):
             file.write(bson.BSON.encode(doc))
 
-    def restore(self, collection):
+    def restore(self, filename):
+        if "/" in filename:
+            collection = filename.split("/")[-1].replace(".bson", "")
+        else:
+            collection = filename.replace(".bson", "")
         print(f"Importing collection `{collection}` ...")
-        file = open(f"{collection}.bson", "rb+")
-        self.client[self.db][collection].insert_many(bson.decode_all(file.read()))
-
+        file = open(filename, "rb+")
+        docs = []
+        for doc in tqdm(bson.decode_iter(file.read())):
+            docs.append(doc)
+            if len(doc) > 10000:
+                self.client[self.db][collection].insert_many(docs)
+                docs.clear()
+        if len(docs):
+            self.client[self.db][collection].insert_many(docs)
     def delete(self, collection):
         print(f"Deleting `{collection}` collection ...")
         self.client[self.db][collection].drop()
+
+    def update(self, collection, find_rule, update_rule):
+        self.client[self.db][collection].update_many(find_rule, update_rule)
