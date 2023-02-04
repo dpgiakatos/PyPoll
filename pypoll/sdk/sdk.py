@@ -93,13 +93,10 @@ class SDK:
                 "Filename": [],
                 "Data from": [],
                 "Data until": [],
-                "Title": [],
                 "Source": [],
-                "Label of documents": [],
-                "Number of documents": [],
+                "Number of tweets": [],
                 "Graph nodes": [],
                 "Graph edges": [],
-                "Polarization index": [],
                 "Uploaded date": []
             }
             for item in res.json()["data"]:
@@ -107,13 +104,10 @@ class SDK:
                 data["Filename"].append(item["filename"])
                 data["Data from"].append(item["date"]["from"])
                 data["Data until"].append(item["date"]["until"])
-                data["Title"].append(item["title"])
                 data["Source"].append(item["source"]["name"])
-                data["Label of documents"].append(item["source"]["label_of_documents"])
-                data["Number of documents"].append(item["source"]["number_of_documents"])
+                data["Number of tweets"].append(item["source"]["number_of_tweets"])
                 data["Graph nodes"].append(item["graph_properties"]["nodes"])
                 data["Graph edges"].append(item["graph_properties"]["edges"])
-                data["Polarization index"].append(item["graph_properties"]["polarization_index"])
                 data["Uploaded date"].append(item["uploadDate"])
             print(tabulate(data, headers="keys"))
         else:
