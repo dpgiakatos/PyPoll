@@ -34,17 +34,37 @@ api.get_followers("atsipras")
 api.get_tweets_by_hashtag("#υποκλοπες")
 ```
 
-Create #υποκλοπες polarized graph using the Tweets and the followers that we collected previously.
+Create #υποκλοπες graph using the Tweets and the followers that we collected previously.
 ```python
 graph = Graph()
-options = {"keep_all_users": False, "remove_leaf_nodes": False}
-users = [
-    {"username": "kmitsotakis", "full_name": "Kyriakos Mitsotakis", "color": {"r": 89, "g": 191, "b": 252, "a": 1}},
-    {"username": "atsipras", "full_name": "Alexis Tsipras", "color": {"r": 252, "g": 52, "b": 129, "a": 1}}
-]
-graph.create_mention_graph_from_mongodb(users, "#υποκλοπες", db, options)
-graph.set_metadata("Twitter", "#υποκλοπες")
-graph.create_layout("kmitsotakis_atsipras_#υποκλοπες.gexf", scale=1e+10)
+options = {
+        "edge_type": "mention",
+        "giant_component": False,
+        "remove_leaf_nodes": False,
+        "users": {"kmitsotakis", "atsipras"}
+    }
+graph.create_graph("#υποκλοπες", db, options)
+graph.save_as("#υποκλοπες.gexf")
+```
+
+Create polarized layout for #υποκλοπες graph.
+```python
+graph.load("#υποκλοπες.gexf")
+options = {
+        "scale": 1e+10,
+        "node_size": 2,
+        "users": {
+            "kmitsotakis": {
+                "full_name": "Kyriakos Mitsotakis",
+                "color": {"r": 27, "g": 92, "b": 199, "a": 1}
+            },
+            "atsipras": {
+                "full_name": "Alexis Tsipras",
+                "color": {"r": 238, "g": 128, "b": 143, "a": 1}
+            }
+        }
+    }
+graph.create_layout("kmitsotakis_atsipras_#υποκλοπες.gexf", options)
 ```
 
 Visualize the #υποκλοπες polarized graph.
