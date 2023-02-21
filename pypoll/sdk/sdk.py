@@ -139,7 +139,7 @@ class SDK:
         body = json.load(metadata_file)
         for key in body:
             body[key] = str(body[key])
-        res = requests.post("http://localhost:8000/graph/upload", files=files, params=body, headers=headers)
+        res = requests.post(f"{self.host}/graph/upload", files=files, params=body, headers=headers)
         if res.status_code == 200:
             print(res.json())
         else:
