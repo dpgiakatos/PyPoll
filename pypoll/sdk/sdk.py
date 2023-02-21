@@ -91,10 +91,8 @@ class SDK:
             data = {
                 "Id": [],
                 "Filename": [],
-                "Data from": [],
-                "Data until": [],
+                "Description": [],
                 "Source": [],
-                "Number of tweets": [],
                 "Graph nodes": [],
                 "Graph edges": [],
                 "Uploaded date": []
@@ -102,10 +100,8 @@ class SDK:
             for item in res.json()["data"]:
                 data["Id"].append(item["_id"])
                 data["Filename"].append(item["filename"])
-                data["Data from"].append(item["date"]["from"])
-                data["Data until"].append(item["date"]["until"])
-                data["Source"].append(item["source"]["name"])
-                data["Number of tweets"].append(item["source"]["number_of_tweets"])
+                data["Description"].append(item["description"])
+                data["Source"].append(item["source"])
                 data["Graph nodes"].append(item["graph_properties"]["nodes"])
                 data["Graph edges"].append(item["graph_properties"]["edges"])
                 data["Uploaded date"].append(item["uploadDate"])
