@@ -86,7 +86,7 @@ class Graph:
             self.graph = self.graph.subgraph(max(nx.connected_components(self.graph), key=len)).copy()
         if options["remove_leaf_nodes"]:
             self.graph.remove_nodes_from([node for node, degree in dict(self.graph.degree()).items() if degree == 1])
-        self.metadata["source"] = {"name": "Twitter", "number_of_tweets": count_documents}
+        self.metadata["source"] = "Twitter"
         if "users" in options:
             options["users"] = {index: value for index, value in enumerate(options["users"])}
         self.metadata["options"] = options
@@ -94,10 +94,7 @@ class Graph:
             "nodes": self.get_number_of_nodes(),
             "edges": self.get_number_of_edges(),
         }
-        self.metadata["date"] = {
-            "from": self.mongodb.get_created_date(hashtag, "ASC").strftime("%Y-%m-%d"),
-            "until": self.mongodb.get_created_date(hashtag, "DES").strftime("%Y-%m-%d")
-        }
+        self.metadata["description"] = f"From {self.mongodb.get_created_date(hashtag, 'ASC').strftime('%Y-%m-%d')} until {self.mongodb.get_created_date(hashtag, 'DES').strftime('%Y-%m-%d')}"
 
     def save_as(self, filename):
         filetype = filename.split(".")[-1]
