@@ -1,4 +1,4 @@
-# poll
+# PyPoll
 A python library for polarization. [Political lighthouse](https://political-lighthouse.netlify.com/) created by using this library.
 
 ### Installation
