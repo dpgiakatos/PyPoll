@@ -72,6 +72,3 @@ Visualize the #υποκλοπες polarized graph.
 plot = GraphPlot()
 plot.show("kmitsotakis_atsipras_#υποκλοπες.gexf")
 ```
-
-### Documentation
-For more information about poll you can read the documentation on ...
