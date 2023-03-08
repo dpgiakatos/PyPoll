@@ -242,7 +242,7 @@ class Graph:
         for walk in walks:
             start = graph_integer_labels.nodes[walk[0]]
             end = graph_integer_labels.nodes[walk[-1]]
-            if start["follows"] == user_A and start["label"] in central_l_nodes:
+            if start["follows"] == user_A and end["label"] in central_l_nodes:
                 c_ll += 1
             elif start["follows"] == user_B and end["label"] in central_r_nodes:
                 c_rr += 1
