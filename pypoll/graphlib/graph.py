@@ -216,24 +216,24 @@ class Graph:
         tree.write(save_to_file)
         self.__metadata_save_as(save_to_file)
 
-    def __random_walk(self, G, start_node, end_nodes):
+    def __random_walk(self, start_node, end_nodes):
     first_node = start_node
     while True:
-        neighbors = list(G.neighbors(start_node))
+        neighbors = list(self.graph.neighbors(start_node))
         random_num = random.randint(0, len(neighbors) - 1)
         start_node = neighbors[random_num]
         if start_node == first_node:
             continue
         if start_node in end_nodes:
             break
-    return (first_node, G.nodes[first_node]), (start_node, G.nodes[start_node])
+    return (first_node, self.graph.nodes[first_node]), (start_node, self.graph.nodes[start_node])
 
     def rwc(self, user_A, user_B, k=None):
-        central_nodes = sorted(G.degree, key=lambda x: x[1], reverse=True)
+        central_nodes = sorted(self.graph.degree, key=lambda x: x[1], reverse=True)
         central_l_nodes = []
         central_r_nodes = []
         for node in central_nodes:
-            follows = G.nodes(data="follows")[node[0]]
+            follows = self.graph.nodes(data="follows")[node[0]]
             if follows == user_A:
                 central_l_nodes.append(node[0])
             elif follows == user_B:
@@ -242,12 +242,12 @@ class Graph:
             central_l_nodes = central_l_nodes[:k]
             central_r_nodes = central_r_nodes[:k]
         end_nodes = central_l_nodes + central_r_nodes
-        start_user_A = [node for node, att in G.nodes(data=True) if att["follows"] == user_A]
-        start_user_B = [node for node, att in G.nodes(data=True) if att["follows"] == user_B]
+        start_user_A = [node for node, att in self.graph.nodes(data=True) if att["follows"] == user_A]
+        start_user_B = [node for node, att in self.graph.nodes(data=True) if att["follows"] == user_B]
         walks = []
         for _ in range(10000):
-            walks.append(self.__random_walk(G, random.choice(start_user_A), end_nodes))
-            walks.append(self.__random_walk(G, random.choice(start_user_B), end_nodes))
+            walks.append(self.__random_walk(random.choice(start_user_A), end_nodes))
+            walks.append(self.__random_walk(random.choice(start_user_B), end_nodes))
         c_ll = 0
         c_rr = 0
         c_lr = 0
