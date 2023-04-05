@@ -8,7 +8,6 @@ import xml.etree.ElementTree as ET
 from itertools import compress, combinations
 from collections import Counter
 import json
-import walker
 
 
 class Graph:
@@ -217,15 +216,24 @@ class Graph:
         tree.write(save_to_file)
         self.__metadata_save_as(save_to_file)
 
+    def __random_walk(self, G, start_node, end_nodes):
+    first_node = start_node
+    while True:
+        neighbors = list(G.neighbors(start_node))
+        random_num = random.randint(0, len(neighbors) - 1)
+        start_node = neighbors[random_num]
+        if start_node == first_node:
+            continue
+        if start_node in end_nodes:
+            break
+    return (first_node, G.nodes[first_node]), (start_node, G.nodes[start_node])
+
     def rwc(self, user_A, user_B, k=None):
-        undirected_graph = self.graph.to_undirected()
-        graph_integer_labels = nx.convert_node_labels_to_integers(undirected_graph, label_attribute="label")
-        walks = walker.random_walks(graph_integer_labels, walk_len=30, n_walks=1000)
-        central_nodes = sorted(undirected_graph.degree, key=lambda x: x[1], reverse=True)
+        central_nodes = sorted(G.degree, key=lambda x: x[1], reverse=True)
         central_l_nodes = []
         central_r_nodes = []
         for node in central_nodes:
-            follows = undirected_graph.nodes(data="follows")[node[0]]
+            follows = G.nodes(data="follows")[node[0]]
             if follows == user_A:
                 central_l_nodes.append(node[0])
             elif follows == user_B:
@@ -233,6 +241,13 @@ class Graph:
         if k is not None:
             central_l_nodes = central_l_nodes[:k]
             central_r_nodes = central_r_nodes[:k]
+        end_nodes = central_l_nodes + central_r_nodes
+        start_user_A = [node for node, att in G.nodes(data=True) if att["follows"] == user_A]
+        start_user_B = [node for node, att in G.nodes(data=True) if att["follows"] == user_B]
+        walks = []
+        for _ in range(10000):
+            walks.append(self.__random_walk(G, random.choice(start_user_A), end_nodes))
+            walks.append(self.__random_walk(G, random.choice(start_user_B), end_nodes))
         c_ll = 0
         c_rr = 0
         c_lr = 0
@@ -240,23 +255,23 @@ class Graph:
         c_ln = 0
         c_rn = 0
         for walk in walks:
-            start = graph_integer_labels.nodes[walk[0]]
-            end = graph_integer_labels.nodes[walk[-1]]
-            if start["follows"] == user_A and end["label"] in central_l_nodes:
+            start = walk[0]
+            end = walk[1]
+            if start[1]["follows"] == user_A and end[0] in central_l_nodes:
                 c_ll += 1
-            elif start["follows"] == user_B and end["label"] in central_r_nodes:
+            elif start[1]["follows"] == user_B and end[0] in central_r_nodes:
                 c_rr += 1
-            elif start["follows"] == user_A and end["label"] in central_r_nodes:
+            elif start[1]["follows"] == user_A and end[0] in central_r_nodes:
                 c_lr += 1
-            elif start["follows"] == user_B and end["label"] in central_l_nodes:
+            elif start[1]["follows"] == user_B and end[0] in central_l_nodes:
                 c_rl += 1
-            elif start["follows"] == user_A and end["follows"] not in [user_A, user_B]:
+            elif start[1]["follows"] == user_A and end[1]["follows"] not in [user_A, user_B]:
                 c_ln += 1
-            elif start["follows"] == user_B and end["follows"] not in [user_A, user_B]:
+            elif start[1]["follows"] == user_B and end[1]["follows"] not in [user_A, user_B]:
                 c_rn += 1
-        p_ll = c_ll / (c_ll + c_lr + c_ln)
-        p_rr = c_rr / (c_rr + c_rl + c_rn)
-        p_lr = c_lr / (c_lr + c_ll + c_ln)
-        p_rl = c_rl / (c_rl + c_rr + c_rn)
-        rwc = p_ll * p_rr + p_lr * p_rl
-        return (rwc + 1) / 2
+        p_ll = c_ll / (c_ll + c_rl)
+        p_rr = c_rr / (c_rr + c_lr)
+        p_lr = c_lr / (c_lr + c_rr)
+        p_rl = c_rl / (c_rl + c_ll)
+        rwc = p_ll * p_rr - p_lr * p_rl
+        return rwc
