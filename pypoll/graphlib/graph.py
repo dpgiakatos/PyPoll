@@ -217,16 +217,16 @@ class Graph:
         self.__metadata_save_as(save_to_file)
 
     def __random_walk(self, start_node, end_nodes):
-    first_node = start_node
-    while True:
-        neighbors = list(self.graph.neighbors(start_node))
-        random_num = random.randint(0, len(neighbors) - 1)
-        start_node = neighbors[random_num]
-        if start_node == first_node:
-            continue
-        if start_node in end_nodes:
-            break
-    return (first_node, self.graph.nodes[first_node]), (start_node, self.graph.nodes[start_node])
+        first_node = start_node
+        while True:
+            neighbors = list(self.graph.neighbors(start_node))
+            random_num = random.randint(0, len(neighbors) - 1)
+            start_node = neighbors[random_num]
+            if start_node == first_node:
+                continue
+            if start_node in end_nodes:
+                break
+        return (first_node, self.graph.nodes[first_node]), (start_node, self.graph.nodes[start_node])
 
     def rwc(self, user_A, user_B, k=None):
         central_nodes = sorted(self.graph.degree, key=lambda x: x[1], reverse=True)
