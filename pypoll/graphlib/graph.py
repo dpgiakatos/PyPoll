@@ -39,18 +39,18 @@ class Graph:
         else:
             self.graph.add_node(user["username"], followers=followers, following=following, tweet=tweet, listed=listed)
 
-    def __add_edge(self, u_of_edge, v_of_edge):
+    def __add_edge(self, u_of_edge, v_of_edge, created_at):
         edge = (u_of_edge, v_of_edge)
         if self.graph.has_edge(*edge):
             self.graph[edge[0]][edge[1]]["weight"] += 1
         else:
-            self.graph.add_edge(edge[0], edge[1], weight=1)
+            self.graph.add_edge(edge[0], edge[1], weight=1, created_at=created_at.strftime("%Y-%m-%d %H:%M:%S"))
 
     def __add_node_from_tweet(self, hashtag, tweet_id, user, options,):
         tweet = self.mongodb.get_tweet(hashtag, tweet_id)
         if tweet is not None:
             self.__add_node(tweet["author"], options)
-            self.__add_edge(user, tweet["author"]["username"])
+            self.__add_edge(user, tweet["author"]["username"], tweet["created_at"])
 
     def create_graph(self, hashtag, mongodb, options):
         if type(mongodb) != MongoDB:
@@ -65,7 +65,7 @@ class Graph:
                     continue
                 for mention_user in document["entities"]["mentions"]:
                     self.__add_node(mention_user, options)
-                    self.__add_edge(document["author"]["username"], mention_user["username"])
+                    self.__add_edge(document["author"]["username"], mention_user["username"], document["created_at"])
             elif options["edge_type"] == "retweet":
                 if "referenced_tweets" not in document:
                     continue
@@ -82,7 +82,7 @@ class Graph:
                 raise Exception("")
         if options["giant_component"]:
             self.graph.remove_nodes_from(list(nx.isolates(self.graph)))
-            self.graph = self.graph.subgraph(max(nx.connected_components(self.graph), key=len)).copy()
+            self.graph = self.graph.subgraph(max(nx.connected_components(self.graph.to_undirected()), key=len)).copy()
         if options["remove_leaf_nodes"]:
             self.graph.remove_nodes_from([node for node, degree in dict(self.graph.degree()).items() if degree == 1])
         self.metadata["source"] = "Twitter"
@@ -104,6 +104,8 @@ class Graph:
         elif filetype == "json":
             graph_file = open(filename, "w", encoding="utf8")
             json.dump(nx.node_link_data(self.graph), graph_file, ensure_ascii=False)
+        elif filetype == "gpickle":
+            nx.write_gpickle(self.graph, filename)
         else:
             raise Exception("")
         self.__metadata_save_as(filename)
@@ -123,6 +125,8 @@ class Graph:
         elif filetype == "json":
             graph_file = open(filename, "r", encoding="utf8")
             self.graph = nx.node_link_graph(json.load(graph_file))
+        elif filetype == "gpickle":
+            self.graph = nx.read_gpickle(filename)
         else:
             raise Exception("")
         metadata_filename = filename.split(".")
